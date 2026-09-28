@@ -1,114 +1,109 @@
 # Transformer from Scratch
 
-A deep learning project exploring the internal mechanics of Transformer architectures, from manually implementing scaled dot-product attention and multi-head attention to training a Transformer-based image classifier on CIFAR-10.
+### Building attention mechanisms manually, then applying Transformer representations to CIFAR-10
 
-The project builds the core Transformer operations step by step in PyTorch before applying the same principles to computer vision.
+A PyTorch project exploring the core mechanics of Transformer architectures through direct tensor-level implementations of self-attention, multi-head attention and causal masking, followed by a Transformer-based image-classification experiment on CIFAR-10.
 
-## Project Overview
+## Result
 
-The notebook progresses through several stages of Transformer implementation:
+The CIFAR-10 classifier reached a best recorded validation accuracy of **82.8%** during 50 epochs of training.
 
-1. scaled dot-product self-attention
-2. multi-head self-attention
-3. causal attention masking
-4. Transformer blocks with residual connections and feed-forward layers
-5. image patch embeddings
-6. Transformer-based CIFAR-10 classification
+| Metric | Result |
+| --- | ---: |
+| Best validation accuracy | **82.80%** |
+| Best epoch | **46** |
+| Epoch-50 validation accuracy | **82.72%** |
+| Epoch-50 validation loss | **0.5578** |
 
-This provides both a low-level implementation of the attention mechanism and a practical application of Transformers to image classification.
+## What I implemented
 
-## Self-Attention from Scratch
+- scaled dot-product self-attention from tensor operations;
+- manual Query, Key and Value projections;
+- multi-head attention reshaping and parallel attention computation;
+- validation against PyTorch attention implementations;
+- causal attention masking;
+- Transformer blocks with LayerNorm, residual connections and feed-forward networks;
+- image patch embeddings for CIFAR-10;
+- classification-token based image classification;
+- training and validation loops with AdamW and data augmentation.
 
-The first section manually constructs Query, Key and Value projections and computes attention using matrix operations.
+## Attention from scratch
 
-Attention scores are calculated from query-key similarities, scaled by the head dimension and normalised with softmax before being used to produce weighted value representations.
+The first part of the notebook constructs self-attention directly from matrix operations.
 
-The implementation is checked against PyTorch's built-in scaled dot-product attention to verify the result.
+Given Query, Key and Value representations, attention scores are computed using scaled query-key similarity, normalised with softmax and applied to the value vectors.
 
-## Multi-Head Attention
+The implementation is numerically checked against `torch.nn.functional.scaled_dot_product_attention`.
 
-The single-head implementation is extended to multi-head attention using a 768-dimensional embedding split across 12 attention heads.
+## Multi-head attention
 
-Query, Key and Value representations are reshaped into independent heads, attention is calculated in parallel, and the resulting representations are concatenated back into the original embedding dimension.
+The single-head implementation is extended to multiple heads by splitting the embedding dimension, performing attention independently in each head and concatenating the outputs.
 
-The implementation is compared against `torch.nn.MultiheadAttention` for validation.
+The resulting tensors are compared against `torch.nn.MultiheadAttention` to validate the implementation.
 
-## Causal Attention
+## Causal masking
 
-A causal attention mask is constructed to prevent tokens from attending to future positions. Attention matrices for individual heads are visualised to inspect the resulting attention patterns.
+A triangular attention mask prevents each sequence position from attending to future positions, reproducing the autoregressive constraint used in decoder-style Transformer models.
 
-## Transformer Block
+Attention maps are visualised per head to inspect the effect of masking.
 
-A simplified Transformer block is implemented using:
+## Transformer block
 
-- Layer Normalisation
-- Multi-Head Attention
-- Residual Connections
-- Feed-Forward Networks
-- GELU activation
-- Dropout
+A simplified Transformer block combines:
 
-This demonstrates how the attention mechanism fits into the larger Transformer architecture.
+- Layer Normalisation;
+- multi-head self-attention;
+- residual connections;
+- feed-forward layers;
+- GELU activation;
+- dropout.
 
-## Transformer-Based Image Classification
+## CIFAR-10 image classification
 
-The final section applies Transformer concepts to computer vision using the CIFAR-10 dataset.
+The final experiment applies Transformer representations to images.
 
-Images are divided into patches using a convolutional patch embedding layer. The resulting patch representations are treated as a sequence and combined with a learnable classification token.
+CIFAR-10 images are divided into non-overlapping patches using a convolutional patch-embedding layer. The patch vectors are combined with a learnable classification token and passed through a Transformer encoder.
 
-A Transformer encoder processes the patch sequence and the final classification-token representation is passed through a neural-network readout head to predict one of the ten CIFAR-10 classes.
+The classification-token representation is then passed to an MLP head predicting one of the ten CIFAR-10 classes.
 
-## Training
+The encoder in this experiment uses a configured Hugging Face `BertModel`; the lower-level attention mechanisms earlier in the notebook are implemented manually for comparison and understanding.
 
-The image classifier uses:
+## Training setup
 
-- CIFAR-10 training and validation data
-- random cropping and horizontal flipping for augmentation
-- image normalisation
-- AdamW optimisation
-- cross-entropy classification loss
-- training loss and accuracy tracking
+- dataset: CIFAR-10;
+- patch size: 4 × 4;
+- hidden dimension: 256;
+- Transformer layers: 12;
+- attention heads: 8;
+- batch size: 192;
+- optimiser: AdamW;
+- learning rate: 5e-4;
+- epochs: 50;
+- augmentation: random crop and horizontal flip.
 
-Training behaviour was explored across 10, 30 and 50 epochs to examine how optimisation duration affected convergence.
+Validation performance peaked at **82.80% accuracy at epoch 46** and finished at **82.72% at epoch 50**.
 
-## Repository Structure
+## Repository structure
 
-- `transformer_from_scratch.ipynb` - complete attention, Transformer and CIFAR-10 classification implementation
-- `requirements.txt` - Python dependencies
-- `.gitignore` - excludes generated datasets, checkpoints and local environment files
-
-## Technologies
-
-- Python
-- PyTorch
-- Torchvision
-- Hugging Face Transformers
-- NumPy
-- Matplotlib
-- CIFAR-10
+```text
+transformer-from-scratch/
+├── transformer_from_scratch.ipynb
+├── requirements.txt
+└── README.md
+```
 
 ## Installation
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Concepts Demonstrated
+## Tech
 
-- Scaled dot-product attention
-- Query, Key and Value projections
-- Multi-head self-attention
-- Causal attention masking
-- Transformer architecture
-- Residual connections
-- Feed-forward networks
-- Image patch embeddings
-- Classification tokens
-- Vision Transformers
-- Data augmentation
-- Deep learning optimisation
-- Image classification
+**Python · PyTorch · Torchvision · Transformers · self-attention · multi-head attention · causal masking · CIFAR-10 · vision transformers**
 
-## Motivation
+## Reference
 
-Rather than treating Transformers as a black-box library component, this project builds their central operations directly with tensor mathematics before applying them to a practical computer-vision task. The progression from individual attention calculations to an end-to-end image classifier provides a practical understanding of how Transformer architectures operate internally.
+The notebook was developed from a Transformer-from-scratch teaching tutorial and extended through implementation exercises, validation checks and the CIFAR-10 training experiment.
